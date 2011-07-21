@@ -1,0 +1,94 @@
+#!/bin/env python
+
+# dtools: simple tools for manipulating and plotting data
+#
+# Copyright (c) 2011 Erik Erlandson
+#
+# Author:  Erik Erlandson <erikerlandson@yahoo.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
+import argparse
+import matplotlib.pyplot as pyplot
+
+import dload
+
+argparser = argparse.ArgumentParser()
+argparser.add_argument('file', nargs='?', type=argparse.FileType('r'), default=sys.stdin, metavar='<inputfile>', help='def= stdin')
+argparser.add_argument('-ofile', type=argparse.FileType('w'), default=sys.stdout, metavar='<outputfile>', help='def= stdout')
+argparser.add_argument('-kslice', default='0', metavar='<slice-list>', help='hist slice list: def= "0", e.g. "1:", "2,3", "1:3,5,7,9:"')
+argparser.add_argument('-rslice', default=':', metavar='<slice-list>', help='row slice list: def= ":"')
+argparser.add_argument('-labels', default=None, metavar='<legend-list>', help='def= no labels, e.g. "header", "lab1,lab2,..."')
+argparser.add_argument('-delim', default=None, metavar='<delimiter>', help='column delimiter: def= whitespace')
+argparser.add_argument('-odelim', default="\t", metavar='<delimiter>', help='output col delimiter: def= tab')
+argparser.add_argument('-kdelim', default=":", metavar='<delimiter>', help='histogram key delimiter: def= ":"')
+argparser.add_argument('-numeric', default=False, action='store_true', help='treat any numeric strings as numbers')
+argparser.add_argument('-cumulative', default=False, action='store_true', help='include cumulative prob and freq')
+
+def trynum(v):
+    try: r = int(v)
+    except: pass
+    else: return r
+    try: r = float(v)
+    except: pass
+    else: return r
+    return v
+
+args = argparser.parse_args()
+
+labheader = (args.labels == "header")
+
+data = dload.load_slice_data(args.file, delim=args.delim, cslice=args.kslice, rslice=args.rslice)
+
+if labheader:
+    args.labels = data[0]
+    data = data[1:]
+elif args.labels is not None:
+    args.labels = args.labels.split(',') 
+
+hist = {}
+Z = 0
+for r in data:
+    if args.numeric: r = [trynum(v) for v in r]
+    k = tuple(r)
+    if not hist.has_key(k): hist[k] = 0
+    hist[k] += 1
+    Z += 1
+
+hk = hist.keys()
+hk.sort()
+
+if args.labels is not None:
+    args.ofile.write(args.kdelim.join(args.labels))
+    args.ofile.write("%s%s" % (args.odelim, "freq"))
+    args.ofile.write("%s%s" % (args.odelim, "prob"))
+    if args.cumulative:
+        args.ofile.write("%s%s" % (args.odelim, "cfreq"))
+        args.ofile.write("%s%s" % (args.odelim, "cprob"))
+    args.ofile.write("\n")
+
+cfreq = 0
+cprob = 0.0
+for k in hk:
+    sk = tuple(["%s"%x for x in k])
+    args.ofile.write(args.kdelim.join(sk))
+    args.ofile.write("%s%d" % (args.odelim, hist[k]))
+    prob = float(hist[k])/float(Z)
+    args.ofile.write("%s%g" % (args.odelim, prob))
+    if args.cumulative:
+        cfreq += hist[k]
+        cprob += prob
+        args.ofile.write("%s%d" % (args.odelim, cfreq))
+        args.ofile.write("%s%g" % (args.odelim, cprob))
+    args.ofile.write("\n")

@@ -1,0 +1,99 @@
+#!/bin/env python
+
+# dtools: simple tools for manipulating and plotting data
+#
+# Copyright (c) 2011 Erik Erlandson
+#
+# Author:  Erik Erlandson <erikerlandson@yahoo.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
+import argparse
+import matplotlib.pyplot as pyplot
+
+import dload
+
+argparser = argparse.ArgumentParser()
+argparser.add_argument('file', nargs='?', type=argparse.FileType('r'), default=sys.stdin, metavar='<filename>', help='def= stdin')
+argparser.add_argument('-xslice', default='0', metavar='<slice-list>', help='col slice list: def= "0", e.g. "none", "1:", "2,3", "1:3,5,7,9:"')
+argparser.add_argument('-yslice', default=None, metavar='<slice-list>', help='col slice list: def= "1:", e.g. "1:", "2,3", "1:3,5,7,9:"')
+argparser.add_argument('-rslice', default=':', metavar='<slice-list>', help='row slice list: def= ":"')
+argparser.add_argument('-legend', default=None, metavar='<legend-list>', help='def= no legend, e.g. "header", "lab1,lab2,..."')
+argparser.add_argument('-title', default=None, metavar='<plot-title>', help='def= no title')
+argparser.add_argument('-xlabel', default=None, metavar='<x-axis-label>', help='def= no label')
+argparser.add_argument('-ylabel', default=None, metavar='<y-axis-label>', help='def= no label')
+argparser.add_argument('-xmin', type=float, default=None, metavar='<min>', help='def= auto')
+argparser.add_argument('-xmax', type=float, default=None, metavar='<max>', help='def= auto')
+argparser.add_argument('-ymin', type=float, default=None, metavar='<min>', help='def= auto')
+argparser.add_argument('-ymax', type=float, default=None, metavar='<max>', help='def= auto')
+argparser.add_argument('-delim', default=None, metavar='<delimiter>', help='column delimiter: def= whitespace')
+argparser.add_argument('-bar', default=False, action='store_true', help='plot as bars')
+
+
+args = argparser.parse_args()
+
+hasx = (args.xslice != "none")
+legheader = (args.legend == "header")
+
+if hasx:
+    if args.yslice is None: args.yslice = '1:'
+    cslice = args.xslice + "," + args.yslice
+else:
+    if args.yslice is None: args.yslice = ':'
+    cslice = args.yslice
+
+data = dload.load_slice_data(args.file, delim=args.delim, cslice=cslice, rslice=args.rslice)
+
+if legheader:
+    args.legend = data[0]
+    data = data[1:]
+elif args.legend is not None:
+    args.legend = args.legend.split(',') 
+
+if hasx: 
+    xdata = [r[0] for r in data]
+    ydata = [r[1:] for r in data]
+else:
+    ydata = data
+    xdata = range(len(ydata))
+
+ydata = [[y[j] for y in ydata] for j in xrange(len(ydata[0]))]
+
+fig = pyplot.figure()
+ax = fig.add_subplot(111)
+
+for yd in ydata:
+    try: xx = [float(x) for x in xdata]
+    except:
+        sys.stderr.write("failed to convert x data to numeric\n")
+        break
+    try: yy = [float(y) for y in yd]
+    except:
+        sys.stderr.write("failed to convert y data to numeric, skipping\n")
+        continue
+    if args.bar:
+        plt = ax.bar(xx, yy)
+    else:
+        plt = ax.plot(xx, yy)
+
+if args.xlabel is not None: ax.set_xlabel(args.xlabel)
+if args.ylabel is not None: ax.set_ylabel(args.ylabel)
+if args.title is not None: ax.set_title(args.title)
+if args.legend is not None: ax.legend(args.legend)
+if args.xmin is not None: ax.set_xlim(left=args.xmin)
+if args.xmax is not None: ax.set_xlim(right=args.xmax)
+if args.ymin is not None: ax.set_ylim(bottom=args.ymin)
+if args.ymax is not None: ax.set_ylim(top=args.ymax)
+
+pyplot.show()

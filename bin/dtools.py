@@ -28,15 +28,26 @@ def slice_funs(slice_expr):
     return r
 
 
-def load_slice_data(dfile, delim=None, cslice=':', rslice=':'):
+def load_slice_data(dfile, delim=None, cslice=':', rslice=':', sslices=[]):
     cslf = slice_funs(cslice)
     rslf = slice_funs(rslice)
+    sslfs = [slice_funs(s) for s in sslices]
+    smaps = [{} for s in sslices]
     data = []
+    n = 0
     for ln in dfile:
         ln = ln.strip('\r\n')
         t = ln.split(delim)
         d = []
         for f in cslf: d.extend(f(t))
+        for j in xrange(len(sslfs)):
+            v = []
+            for f in sslfs[j]: v.extend(f(t))
+            k = "|".join(v)
+            if not smaps[j].has_key(k):
+                smaps[j][k] = "s%09d"%(n)
+                n += 1
+            d.append(smaps[j][k])
         data.append(d)
     t = data
     data = []

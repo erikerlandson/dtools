@@ -22,7 +22,7 @@ import sys
 import argparse
 import matplotlib.pyplot as pyplot
 
-import dload
+import dtools
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('file', nargs='?', type=argparse.FileType('r'), default=sys.stdin, metavar='<filename>', help='def= stdin')
@@ -53,7 +53,7 @@ else:
     if args.yslice is None: args.yslice = ':'
     cslice = args.yslice
 
-data = dload.load_slice_data(args.file, delim=args.delim, cslice=cslice, rslice=args.rslice)
+data = dtools.load_slice_data(args.file, delim=args.delim, cslice=cslice, rslice=args.rslice)
 
 if legheader:
     args.legend = data[0]

@@ -22,7 +22,7 @@ import sys
 import argparse
 import matplotlib.pyplot as pyplot
 
-import dload
+import dtools
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('file', nargs='?', type=argparse.FileType('r'), default=sys.stdin, metavar='<inputfile>', help='def= stdin')
@@ -49,7 +49,7 @@ args = argparser.parse_args()
 
 labheader = (args.labels == "header")
 
-data = dload.load_slice_data(args.file, delim=args.delim, cslice=args.kslice, rslice=args.rslice)
+data = dtools.load_slice_data(args.file, delim=args.delim, cslice=args.kslice, rslice=args.rslice)
 
 if labheader:
     args.labels = data[0]

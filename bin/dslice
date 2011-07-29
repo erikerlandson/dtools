@@ -21,7 +21,7 @@
 import sys
 import argparse
 
-import dload
+import dtools
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('file', nargs='?', type=argparse.FileType('r'), default=sys.stdin, metavar='<filename>', help='def= stdin')
@@ -34,7 +34,7 @@ argparser.add_argument('-odelim', default="\t", metavar='<delimiter>', help='out
 
 args = argparser.parse_args()
 
-data = dload.load_slice_data(args.file, delim=args.delim, cslice=args.cslice, rslice=args.rslice)
+data = dtools.load_slice_data(args.file, delim=args.delim, cslice=args.cslice, rslice=args.rslice)
 
 for d in data:
     args.ofile.write(args.odelim.join(d))

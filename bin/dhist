@@ -26,8 +26,8 @@ import dtools
 argparser = argparse.ArgumentParser()
 argparser.add_argument('file', nargs='?', type=argparse.FileType('r'), default=sys.stdin, metavar='<inputfile>', help='def= stdin')
 argparser.add_argument('-ofile', type=argparse.FileType('w'), default=sys.stdout, metavar='<outputfile>', help='def= stdout')
-argparser.add_argument('-kslice', type=dtools.slicelist_arg, default=['0'], metavar='<slicelist>', help='hist slicelist: def= "0", e.g. "1:", "2,3", "1:3,5,7,9:"')
-argparser.add_argument('-rslice', type=dtools.slicelist_arg, default=[':'], metavar='<slicelist>', help='row slicelist: def= ":"')
+argparser.add_argument('-key', type=dtools.slicelist_arg, default=[':'], metavar='<slicelist>', help='histogram key slicelist: def= ":", e.g. "1:", "2,3", "1:3,5,7,9:"')
+argparser.add_argument('-rows', type=dtools.slicelist_arg, default=[':'], metavar='<slicelist>', help='row slicelist: def= ":"')
 argparser.add_argument('-labels', default=None, metavar='<legend-list>', help='def= no labels, e.g. "header", "lab1,lab2,..."')
 argparser.add_argument('-delim', default=None, metavar='<delimiter>', help='column delimiter: def= whitespace')
 argparser.add_argument('-odelim', default="\t", metavar='<delimiter>', help='output col delimiter: def= tab')
@@ -48,7 +48,7 @@ args = argparser.parse_args()
 
 labheader = (args.labels == "header")
 
-data = dtools.load_slice_data(args.file, delim=args.delim, cslice=args.kslice, rslice=args.rslice)
+data = dtools.load_slice_data(args.file, delim=args.delim, cslice=args.key, rslice=args.rows)
 
 if labheader:
     args.labels = data[0]

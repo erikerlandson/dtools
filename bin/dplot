@@ -26,9 +26,9 @@ import dtools
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('file', nargs='?', type=argparse.FileType('r'), default=sys.stdin, metavar='<filename>', help='def= stdin')
-argparser.add_argument('-xslice', type=dtools.slicelist_arg, default=None, metavar='<slicelist>', help='x slicelist: def= auto, e.g. "1:", "2,3", "1:3,5,7,9:"')
-argparser.add_argument('-yslice', type=dtools.slicelist_arg, default=[':'], metavar='<slicelist>', help='y slicelist: def= ":", e.g. "1:", "2,3", "1:3,5,7,9:"')
-argparser.add_argument('-rslice', type=dtools.slicelist_arg, default=[':'], metavar='<slicelist>', help='row slicelist: def= ":"')
+argparser.add_argument('-x', type=dtools.slicelist_arg, default=None, metavar='<slicelist>', help='x slicelist: def= auto, e.g. "1:", "2,3", "1:3,5,7,9:"')
+argparser.add_argument('-y', type=dtools.slicelist_arg, default=[':'], metavar='<slicelist>', help='y slicelist: def= ":", e.g. "1:", "2,3", "1:3,5,7,9:"')
+argparser.add_argument('-rows', type=dtools.slicelist_arg, default=[':'], metavar='<slicelist>', help='row slicelist: def= ":"')
 argparser.add_argument('-legend', default=None, metavar='<legend-list>', help='def= no legend, e.g. "header", "lab1,lab2,..."')
 argparser.add_argument('-title', default=None, metavar='<plot-title>', help='def= no title')
 argparser.add_argument('-xlabel', default=None, metavar='<x-axis-label>', help='def= no label')
@@ -43,15 +43,15 @@ argparser.add_argument('-bar', default=False, action='store_true', help='plot as
 
 args = argparser.parse_args()
 
-hasx = (args.xslice is not None)
+hasx = (args.x is not None)
 legheader = (args.legend == "header")
 
 if hasx:
-    cslice = args.xslice + args.yslice
+    cslice = args.x + args.y
 else:
-    cslice = args.yslice
+    cslice = args.y
 
-data = dtools.load_slice_data(args.file, delim=args.delim, cslice=cslice, rslice=args.rslice)
+data = dtools.load_slice_data(args.file, delim=args.delim, cslice=cslice, rslice=args.rows)
 
 if legheader:
     args.legend = data[0]

@@ -59,17 +59,54 @@ def slicefun(expr):
     return eval(e)
 
 
+def slicelist(x):
+    jlst = list(x)
+    r = []
+    if len(jlst) <= 0: return r
+    jL = jlst[0]
+    jprv = jL
+    for j in jlst[1:]:
+        if j == jprv+1:
+            jprv = j
+            continue
+        r.append("%d:%d"%(jL,jprv+1))
+        jL = j
+        jprv = j
+    r.append("%d:%d"%(jL,jprv+1))
+    return r
+
+
+def subtract_slices(N, sl, sublist):
+    U = range(N)
+    ss = set()
+    for s in sublist:
+        for f in [slicefun(x) for x in s]: ss |= set(f(U))
+    r = []
+    for f in [slicefun(x) for x in sl]:
+        sr = set(f(U)) - ss
+        r.extend(slicelist(sr))
+    return r
+
+
 def load_slice_data(dfile, delim=None, cslice=':', rslice=':', sslices=[]):
-    cslf = [slicefun(x) for x in cslice]
     rslf = [slicefun(x) for x in rslice]
     sslfs = [[slicefun(x) for x in xx] for xx in [s[0] for s in sslices]]
     sfmts = [s[1] for s in sslices]
     smaps = [{} for s in sslices]
     data = []
     n = 0
+    pL = -1
     for ln in dfile:
         ln = ln.strip('\r\n')
         t = ln.split(delim)
+        L = len(t)
+        if (L != pL) and ((pL < 0) or (len(sslices) > 0)):
+            # Compute cslf at least once, first line read
+            # If sslices is nonempty, then also recompute each time number of fields changes
+            tcs = cslice[:]
+            if len(sslices) > 0: tcs = subtract_slices(L, tcs, [s[0] for s in sslices])
+            cslf = [slicefun(x) for x in tcs]
+            pL = L
         d = []
         for f in cslf: d.extend(f(t))
         for j in xrange(len(sslfs)):

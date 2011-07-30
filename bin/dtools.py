@@ -26,6 +26,7 @@ def slicelist_arg(a):
     emsg = 'bad slicelist format "%s"'%(a)
     ss = a.split(',')
     ss = [x.strip(' \t') for x in ss]
+    r = []
     for s in ss:
         if ':' in s:
             t = s.split(':')
@@ -34,10 +35,12 @@ def slicelist_arg(a):
                 if v == '': continue
                 try: j = int(v)
                 except: raise argparse.ArgumentTypeError(emsg)
+            r.append(s)
         else:
             try: j = int(s)
             except: raise argparse.ArgumentTypeError(emsg)
-    return ss
+            r.append("%d:%d"%(j,j+1))
+    return r
 
 
 def scrub_arg(a):
@@ -52,19 +55,8 @@ def scrub_arg(a):
 
 
 def slicefun(expr):
-    if ':' in expr: e = "lambda L:L["+expr+"]"
-    else: e = "lambda L:[L["+expr+"]]"
+    e = "lambda L:L["+expr+"]"
     return eval(e)
-
-
-def slice_funs(slice_expr):
-    r=[]
-    ss = slice_expr.split(',')
-    for s in ss:
-        if s.find(':') >= 0: e = "lambda L:L["+s+"]"
-        else: e = "lambda L:[L["+s+"]]"
-        r.append(eval(e))
-    return r
 
 
 def load_slice_data(dfile, delim=None, cslice=':', rslice=':', sslices=[]):

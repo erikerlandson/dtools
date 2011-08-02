@@ -22,6 +22,16 @@ import sys
 import argparse
 
 
+def trynum(v):
+    try: r = int(v)
+    except: pass
+    else: return r
+    try: r = float(v)
+    except: pass
+    else: return r
+    return v
+
+
 def slicelist_arg(a):
     emsg = 'bad slicelist format "%s"'%(a)
     ss = a.split(',')
@@ -118,7 +128,34 @@ def load_slice_data(dfile, delim=None, cslice=':', rslice=':', sslices=[]):
                 n += 1
             d.append(smaps[j][k])
         data.append(d)
-    t = data
+    r = []
+    for f in rslf: r.extend(f(data))
+    return r
+
+
+def load_key_data(dfile, delim=None, kslice='0', rslice=':', cslice='1:', numkey=False):
+    rslf = [slicefun(x) for x in rslice]
+    cslf = [slicefun(x) for x in cslice]
+    kslf = [slicefun(x) for x in kslice]
     data = []
-    for f in rslf: data.extend(f(t))
+    cmax = 0
+    for ln in dfile:
+        ln = ln.strip('\r\n')
+        t = ln.split(delim)
+        key = []
+        for f in kslf: key.extend(f(t))
+        d = []
+        for f in cslf: d.extend(f(t))
+        if len(d) > cmax: cmax = len(d)
+        data.append([key, d])
+    r = []
+    for f in rslf: r.extend(f(data))
+    data = {}
+    for d in r:
+        dk = d[0]
+        if numkey: dk = [trynum(v) for v in dk]
+        key = tuple(dk)
+        if not data.has_key(key): data[key] = [list() for x in xrange(cmax)]
+        for j in xrange(len(d[1])):
+            data[key][j].append(d[1][j])
     return data

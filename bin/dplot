@@ -38,7 +38,8 @@ argparser.add_argument('-xmax', type=float, default=None, metavar='<max>', help=
 argparser.add_argument('-ymin', type=float, default=None, metavar='<min>', help='def= auto')
 argparser.add_argument('-ymax', type=float, default=None, metavar='<max>', help='def= auto')
 argparser.add_argument('-delim', default=None, metavar='<delimiter>', help='column delimiter: def= whitespace')
-argparser.add_argument('-bar', default=False, action='store_true', help='plot as bars')
+argparser.add_argument('-barplot', default=False, action='store_true', help='plot as bars')
+argparser.add_argument('-boxplot', default=False, action='store_true', help='boxplot using data categorized by key "-x"')
 
 
 args = argparser.parse_args()
@@ -51,7 +52,12 @@ if hasx:
 else:
     cslice = args.y
 
-data = dtools.load_slice_data(args.file, delim=args.delim, cslice=cslice, rslice=args.rows)
+keydata = args.boxplot
+
+if keydata:
+    data = dtools.load_key_data(args.file, delim=args.delim, rslice=args.rows, kslice=args.x, cslice=args.y, numkey=True)
+else:
+    data = dtools.load_slice_data(args.file, delim=args.delim, cslice=cslice, rslice=args.rows)
 
 if legheader:
     args.legend = data[0]
@@ -59,31 +65,47 @@ if legheader:
 elif args.legend is not None:
     args.legend = args.legend.split(',') 
 
-if hasx: 
-    xdata = [r[0] for r in data]
-    ydata = [r[1:] for r in data]
+if keydata:
+    xkeys = data.keys()
+    xkeys.sort()
+    ydata = [data[k] for k in xkeys]
+    ydata = [[y[j] for y in ydata] for j in xrange(len(ydata[0]))]
 else:
-    ydata = data
-    xdata = range(len(ydata))
+    if hasx: 
+        xdata = [r[0] for r in data]
+        ydata = [r[1:] for r in data]
+    else:
+        ydata = data
+        xdata = range(len(ydata))
+    ydata = [[y[j] for y in ydata] for j in xrange(len(ydata[0]))]
 
-ydata = [[y[j] for y in ydata] for j in xrange(len(ydata[0]))]
 
 fig = pyplot.figure()
 ax = fig.add_subplot(111)
 
-for yd in ydata:
-    try: xx = [float(x) for x in xdata]
-    except:
-        sys.stderr.write("failed to convert x data to numeric\n")
-        break
-    try: yy = [float(y) for y in yd]
-    except:
-        sys.stderr.write("failed to convert y data to numeric, skipping\n")
-        continue
-    if args.bar:
-        plt = ax.bar(xx, yy)
-    else:
-        plt = ax.plot(xx, yy)
+if args.boxplot:
+    for yd in ydata:
+        try: yy = [[float(x) for x in y] for y in yd]
+        except:
+            sys.stderr.write("failed to convert y data to numeric, skipping\n")
+            continue
+        plt = ax.boxplot(yy)
+    xt = pyplot.setp(ax, xticklabels=["%s"%x for x in xkeys])
+    pyplot.setp(xt, rotation=45, fontsize=10)
+else:
+    for yd in ydata:
+        try: xx = [float(x) for x in xdata]
+        except:
+            sys.stderr.write("failed to convert x data to numeric\n")
+            break
+        try: yy = [float(y) for y in yd]
+        except:
+            sys.stderr.write("failed to convert y data to numeric, skipping\n")
+            continue
+        if args.bar:
+            plt = ax.bar(xx, yy)
+        else:
+            plt = ax.plot(xx, yy)
 
 if args.xlabel is not None: ax.set_xlabel(args.xlabel)
 if args.ylabel is not None: ax.set_ylabel(args.ylabel)

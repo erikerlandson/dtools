@@ -35,14 +35,6 @@ argparser.add_argument('-kdelim', default=":", metavar='<delimiter>', help='hist
 argparser.add_argument('-numeric', default=False, action='store_true', help='treat any numeric strings as numbers')
 argparser.add_argument('-cumulative', default=False, action='store_true', help='include cumulative prob and freq')
 
-def trynum(v):
-    try: r = int(v)
-    except: pass
-    else: return r
-    try: r = float(v)
-    except: pass
-    else: return r
-    return v
 
 args = argparser.parse_args()
 
@@ -59,7 +51,7 @@ elif args.labels is not None:
 hist = {}
 Z = 0
 for r in data:
-    if args.numeric: r = [trynum(v) for v in r]
+    if args.numeric: r = [dtools.trynum(v) for v in r]
     k = tuple(r)
     if not hist.has_key(k): hist[k] = 0
     hist[k] += 1

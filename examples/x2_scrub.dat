@@ -1,0 +1,4 @@
+privateA        secretA         1       a
+privateB        secretA         2       b
+privateA        secretB         3       c
+privateB        secretB         4       d

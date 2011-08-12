@@ -59,7 +59,7 @@ if keydata:
 else:
     data = dtools.load_slice_data(args.file, delim=args.delim, cslice=cslice, rslice=args.rows)
 
-if legheader:
+if legheader and not keydata:
     if hasx: args.legend = data[0][1:]
     else: args.legend = data[0]
     data = data[1:]

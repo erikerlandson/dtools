@@ -40,6 +40,7 @@ argparser.add_argument('-ymax', type=float, default=None, metavar='<max>', help=
 argparser.add_argument('-delim', default=None, metavar='<delimiter>', help='column delimiter: def= whitespace')
 argparser.add_argument('-barplot', default=False, action='store_true', help='plot as bars')
 argparser.add_argument('-boxplot', default=False, action='store_true', help='boxplot using data categorized by key "-x"')
+argparser.add_argument('-kdelim', default=":", metavar='<delimiter>', help='x key delimiter: def= ":"')
 
 
 args = argparser.parse_args()
@@ -91,7 +92,7 @@ if args.boxplot:
             sys.stderr.write("failed to convert y data to numeric, skipping\n")
             continue
         plt = ax.boxplot(yy)
-    xt = pyplot.setp(ax, xticklabels=["%s"%x for x in xkeys])
+    xt = pyplot.setp(ax, xticklabels=["%s"%(args.kdelim.join(x)) for x in xkeys])
     pyplot.setp(xt, rotation=45, fontsize=10)
 else:
     for yd in ydata:

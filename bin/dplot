@@ -40,6 +40,7 @@ argparser.add_argument('-ymax', type=float, default=None, metavar='<max>', help=
 argparser.add_argument('-delim', default=None, metavar='<delimiter>', help='column delimiter: def= whitespace')
 argparser.add_argument('-barplot', default=False, action='store_true', help='plot as bars')
 argparser.add_argument('-boxplot', default=False, action='store_true', help='boxplot using data categorized by key "-x"')
+argparser.add_argument('-scatterplot', default=False, action='store_true', help='scatter plot')
 argparser.add_argument('-kdelim', default=":", metavar='<delimiter>', help='x key delimiter: def= ":"')
 
 
@@ -85,6 +86,9 @@ else:
 fig = pyplot.figure()
 ax = fig.add_subplot(111)
 
+markers = ['o','s']
+colors = ['b', 'g', 'r']
+
 if args.boxplot:
     for yd in ydata:
         try: yy = [[float(x) for x in y] for y in yd]
@@ -95,6 +99,7 @@ if args.boxplot:
     xt = pyplot.setp(ax, xticklabels=["%s"%(args.kdelim.join(x)) for x in xkeys])
     pyplot.setp(xt, rotation=45, fontsize=10)
 else:
+    k = 0
     for yd in ydata:
         try: xx = [float(x) for x in xdata]
         except:
@@ -106,8 +111,11 @@ else:
             continue
         if args.barplot:
             plt = ax.bar(xx, yy)
+        elif args.scatterplot:
+            plt = ax.scatter(xx, yy, c=colors[k % len(colors)], marker=markers[k % len(markers)])
         else:
             plt = ax.plot(xx, yy)
+        k += 1
 
 if args.xlabel is not None: ax.set_xlabel(args.xlabel)
 if args.ylabel is not None: ax.set_ylabel(args.ylabel)

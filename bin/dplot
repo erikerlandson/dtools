@@ -61,8 +61,17 @@ if keydata:
 else:
     data = dtools.load_slice_data(args.file, delim=args.delim, cslice=cslice, rslice=args.rows)
 
+if hasx:
+    args.file.seek(0)
+    line1 = args.file.readline().strip('\r\n').split(args.delim)
+    xcols = len(dtools.apply_slice(line1, dslice=args.x))
+    ycols = len(dtools.apply_slice(line1, dslice=args.y))
+    if (xcols > 1 and xcols != ycols):
+        sys.stderr.write("xcols and ycols don't match\n")
+        sys.exit(1)
+    
 if legheader and not keydata:
-    if hasx: args.legend = data[0][1:]
+    if hasx: args.legend = data[0][xcols:]
     else: args.legend = data[0]
     data = data[1:]
 elif args.legend is not None:
@@ -74,13 +83,15 @@ if keydata:
     ydata = [data[k] for k in xkeys]
     ydata = [[y[j] for y in ydata] for j in xrange(len(ydata[0]))]
 else:
-    if hasx: 
-        xdata = [r[0] for r in data]
-        ydata = [r[1:] for r in data]
+    if hasx:
+        xdata = [r[:xcols] for r in data]
+        ydata = [r[xcols:] for r in data]
+        xdata = [[x[j] for x in xdata] for j in xrange(len(xdata[0]))]
+        ydata = [[y[j] for y in ydata] for j in xrange(len(ydata[0]))]
     else:
         ydata = data
-        xdata = range(len(ydata))
-    ydata = [[y[j] for y in ydata] for j in xrange(len(ydata[0]))]
+        xdata = [range(len(ydata))]
+        ydata = [[y[j] for y in ydata] for j in xrange(len(ydata[0]))]
 
 
 fig = pyplot.figure()
@@ -101,7 +112,11 @@ if args.boxplot:
 else:
     k = 0
     for yd in ydata:
-        try: xx = [float(x) for x in xdata]
+        if len(xdata) > 1:
+            xd = xdata[k]
+        else:
+            xd = xdata[0]
+        try: xx = [float(x) for x in xd]
         except:
             sys.stderr.write("failed to convert x data to numeric\n")
             break

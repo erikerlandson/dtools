@@ -97,6 +97,12 @@ def subtract_slices(N, sl, sublist):
         r.extend(slicelist(sr))
     return r
 
+def apply_slice(data, dslice=':'):
+    tcs = dslice[:]
+    cslf = [slicefun(x) for x in tcs]
+    r = []
+    for f in cslf: r.extend(f(data))
+    return r
 
 def load_slice_data(dfile, delim=None, cslice=':', rslice=':', sslices=[]):
     rslf = [slicefun(x) for x in rslice]

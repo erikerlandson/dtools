@@ -37,11 +37,11 @@ argparser.add_argument('-xmin', type=float, default=None, metavar='<min>', help=
 argparser.add_argument('-xmax', type=float, default=None, metavar='<max>', help='def= auto')
 argparser.add_argument('-ymin', type=float, default=None, metavar='<min>', help='def= auto')
 argparser.add_argument('-ymax', type=float, default=None, metavar='<max>', help='def= auto')
-argparser.add_argument('-delim', default=None, metavar='<delimiter>', help='column delimiter: def= whitespace')
+argparser.add_argument('-delim', type=dtools.delim_arg, default=None, metavar='<delimiter>', help='column delimiter: def= whitespace')
 argparser.add_argument('-barplot', default=False, action='store_true', help='plot as bars')
 argparser.add_argument('-boxplot', default=False, action='store_true', help='boxplot using data categorized by key "-x"')
 argparser.add_argument('-scatterplot', default=False, action='store_true', help='scatter plot')
-argparser.add_argument('-kdelim', default=":", metavar='<delimiter>', help='x key delimiter: def= ":"')
+argparser.add_argument('-kdelim', type=dtools.delim_arg, default=":", metavar='<delimiter>', help='x key delimiter: def= ":"')
 
 
 args = argparser.parse_args()

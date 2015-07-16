@@ -63,6 +63,15 @@ def scrub_arg(a):
     t[0] = slicelist_arg(t[0])
     return t
 
+def delim_arg(a):
+    emsg = 'bad delim argument format "%s"'%(a)
+    t = a
+    if (a == "tab"): t = "\t"
+    if (a == "ws"): t = None
+    if (a == "whitespace"): t = None
+    if (a == "comma"): t = ","
+    if (a == "space"): t = " "
+    return t
 
 def slicefun(expr):
     e = "lambda L:L["+expr+"]"
